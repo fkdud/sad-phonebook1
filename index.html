@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aether Contacts - A premium, beautiful, and intuitive contact management web application. Keep your contacts organized in a sleek glassmorphic environment.">
+    <title>Aether Contacts | Premium Phonebook</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-background">
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i data-lucide="notebook-tabs"></i>
+                </div>
+                <div>
+                    <h1>Aether Contacts</h1>
+                    <p class="subtitle">Sleek Local Phonebook</p>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="searchInput" placeholder="이름, 전화번호, 이메일로 검색..." autocomplete="off">
+                <button id="btnClearSearch" class="clear-search-btn hidden" aria-label="검색어 지우기">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats & Action Toolbar -->
+        <section class="toolbar">
+            <div class="stats">
+                <span class="stats-label">전체 연락처</span>
+                <span id="contactCount" class="stats-value">0</span>
+            </div>
+            <button id="btnAddNew" class="btn btn-primary">
+                <i data-lucide="plus"></i>
+                <span>새 연락처 추가</span>
+            </button>
+        </section>
+
+        <!-- Contacts Container -->
+        <main class="contacts-wrapper">
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state hidden">
+                <div class="empty-icon">
+                    <i data-lucide="users"></i>
+                </div>
+                <h2>등록된 연락처가 없습니다</h2>
+                <p>새로운 연락처를 추가하여 인맥을 편리하게 관리해보세요.</p>
+                <button id="btnEmptyAdd" class="btn btn-secondary">
+                    <i data-lucide="plus-circle"></i>
+                    <span>첫 연락처 추가하기</span>
+                </button>
+            </div>
+
+            <!-- Contacts Grid -->
+            <div id="contactsGrid" class="contacts-grid">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Contact Modal -->
+    <div id="contactModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modalTitle">새 연락처 추가</h2>
+                <button id="btnModalClose" class="btn-close" aria-label="닫기">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="contactForm" novalidate>
+                <input type="hidden" id="contactId">
+                
+                <div class="form-group">
+                    <label for="contactName">이름 <span class="required">*</span></label>
+                    <div class="input-container">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <input type="text" id="contactName" placeholder="이름을 입력하세요 (2자 이상)" required minlength="2">
+                    </div>
+                    <span id="errorName" class="error-msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactPhone">전화번호 <span class="required">*</span></label>
+                    <div class="input-container">
+                        <i data-lucide="phone" class="input-icon"></i>
+                        <input type="tel" id="contactPhone" placeholder="010-1234-5678" required>
+                    </div>
+                    <span id="errorPhone" class="error-msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactEmail">이메일</label>
+                    <div class="input-container">
+                        <i data-lucide="mail" class="input-icon"></i>
+                        <input type="email" id="contactEmail" placeholder="example@email.com">
+                    </div>
+                    <span id="errorEmail" class="error-msg"></span>
+                </div>
+
+                <div class="form-group">
+                    <div class="textarea-header">
+                        <label for="contactNotes">메모</label>
+                        <span id="notesCharCount" class="char-count">0/150</span>
+                    </div>
+                    <div class="input-container textarea-container">
+                        <i data-lucide="sticky-note" class="input-icon textarea-icon"></i>
+                        <textarea id="contactNotes" placeholder="간단한 메모를 입력하세요..." maxlength="150" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="btnModalCancel" class="btn btn-text">취소</button>
+                    <button type="submit" id="btnModalSave" class="btn btn-primary">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay hidden" aria-modal="true" role="dialog">
+        <div class="modal-card confirm-card">
+            <div class="confirm-content">
+                <div class="warning-icon-wrapper">
+                    <i data-lucide="alert-triangle"></i>
+                </div>
+                <h2>연락처 삭제</h2>
+                <p>정말로 '<strong id="deleteTargetName">이름</strong>' 연락처를 삭제하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.</p>
+            </div>
+            <div class="modal-footer confirm-footer">
+                <button type="button" id="btnConfirmCancel" class="btn btn-text">취소</button>
+                <button type="button" id="btnConfirmDelete" class="btn btn-danger">삭제하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
